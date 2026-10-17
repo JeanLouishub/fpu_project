@@ -1,0 +1,11 @@
+# Ignore everything
+*
+
+# But keep folders, so git can look inside them
+!*/
+
+# Keep SystemVerilog files
+!*.sv
+
+# Keep this file itself
+!.gitignore
