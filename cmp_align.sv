@@ -1,30 +1,52 @@
+
 module cmp_align
-	import fpu_pkg::*;
+    import fpu_pkg::*;
 (
-	input fp_unpacked_t a,
-	input fp_unpacked_t b,
-	output logic [7:0] exp_out,
-	output logic [24:0] mant_a, // 23 mantissa bits + 1 hidden bit + 1 guard bit
-	output logic [24:0] mant_b,
+    input  fp_unpacked_t a,
+    input  fp_unpacked_t b,
 
+    output logic [7:0]  exp_out,
+    output logic [25:0] mant_a,
+    output logic [25:0] mant_b
 );
-assign mant_a = {a.mant, 2'b00}; // add guard bit
 
-assign mant_b = {b.mant, 2'b00}; // add guard bit
+    logic [7:0] shift_amount;
+    logic [25:0] mant_a_ext;
+    logic [25:0] mant_b_ext;
+    logic sticky;
 
-//compare the exponents of a and b, and align the mantissas accordingly
-	logic [7:0] exp_a;
-	logic [7:0] exp_b;
+    always_comb begin
 
-	if(a.exp > b.exp) begin
-		exp_out = a.exp;
-		mant_a = a.mant;
-		mant_b = b.mant >> (a.exp - b.exp);
-	end else begin
-		exp_out = b.exp;
-		mant_a = a.mant >> (b.exp - a.exp);
-		mant_b = b.mant;
-	end
+        // Ajouter les deux bits supplementaires
+        mant_a_ext = {a.mant, 2'b00};
+        mant_b_ext = {b.mant, 2'b00};
+        sticky = 0;
 
-//	
+        if (a.exp > b.exp) begin
+            exp_out = a.exp;
+            shift_amount = a.exp - b.exp;
+            mant_b = mant_b_ext >> shift_amount;
+
+
+            for (int i = 0; i < shift_amount; i++) begin
+                sticky = sticky | mant_b_ext[i];
+            end
+
+            mant_b[0] = mant_b[0] | sticky;
+
+        end
+        else begin
+            exp_out = b.exp;
+            shift_amount = b.exp - a.exp;
+            mant_a = mant_a_ext >> shift_amount;
+
+            for (int i = 0; i < shift_amount; i++) begin
+                sticky = sticky | mant_a_ext[i];
+            end
+
+            mant_a[0] = mant_a[0] | sticky;
+        end
+
+    end
+
 endmodule
