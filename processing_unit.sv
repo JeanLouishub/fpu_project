@@ -38,12 +38,37 @@ unpacker u_unpack_b (.x (b), .u (ub));
 
 //2. cmp + align
 
+cmp_align u_cmp_align (
+    .a (ua), 
+    .b (ub), 
+    .exp_out (exp_out), 
+    .mant_a (mant_a), 
+    .mant_b (mant_b)
+);
 
 //3. ALU
-
+alu u_alu (
+    .a (ua), 
+    .b (ub), 
+    .op (op[0]), 
+    .exp_out (exp_out), 
+    .mant_a (mant_a), 
+    .mant_b (mant_b),
+    .result_sign (result_sign),
+    .result_exp (result_exp),
+    .result_mant (result_mant)
+);
 
 //4. Normalize
-
+normalize norm (
+    .u_in (u_alu), 
+    .u_out (u_norm), 
+    .rnd (rnd), 
+    .stk (stk),
+    .result_sign (result_sign),
+    .result_exp (result_exp),
+    .result_mant (result_mant)
+);
 
 //5. Round 
 rounder u_round (
@@ -53,14 +78,20 @@ rounder u_round (
     .u_out (u_rounded)
 );
 
+
+//5.5 mux_result
+mux_result mr(
+    .u_rounded (u_rounded),
+    .normal_result (normal_result),
+    .packed_result (packed_result)
+);
+
 //6. packer
 packer u_pack (
     .u (u_rounded),
     .result (normal_result)
 );
-
-//7. mux result 
-
+ 
 
 assign packed_result = normal_result; //for now, check special cases 
 
