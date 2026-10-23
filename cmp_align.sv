@@ -26,25 +26,36 @@ module cmp_align
             exp_out = a.exp;
             shift_amount = a.exp - b.exp;
             mant_b = mant_b_ext >> shift_amount;
+            mant_a = mant_a_ext;
 
+            if (shift_amount > 26) begin
+                mant_b = 26'b0;
+                sticky = 1'b1;
+            end else begin
+                for (int i = 0; i < shift_amount; i++) begin
+                    sticky = sticky | mant_b_ext[i];
+                end
 
-            for (int i = 0; i < shift_amount; i++) begin
-                sticky = sticky | mant_b_ext[i];
+                mant_b[0] = mant_b[0] | sticky;
             end
-
-            mant_b[0] = mant_b[0] | sticky;
 
         end
         else begin
             exp_out = b.exp;
             shift_amount = b.exp - a.exp;
             mant_a = mant_a_ext >> shift_amount;
+            mant_b = mant_b_ext;
 
-            for (int i = 0; i < shift_amount; i++) begin
-                sticky = sticky | mant_a_ext[i];
+            if (shift_amount > 26) begin
+                mant_a = 26'b0;
+                sticky = 1'b1;
+            end else begin
+                for (int i = 0; i < shift_amount; i++) begin
+                    sticky = sticky | mant_a_ext[i];
+                end
+
+                mant_a[0] = mant_a[0] | sticky;
             end
-
-            mant_a[0] = mant_a[0] | sticky;
         end
 
     end
