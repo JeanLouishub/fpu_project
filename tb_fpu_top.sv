@@ -90,8 +90,8 @@ module tb_fpu_top;
                           input  logic [31:0] b,
                           input  logic [1:0]  op,
                           output logic [31:0] res,
-                          output logic        timeout);
-        int cycles;
+                          output logic        timeout,
+                          output int          cycles );
 
         input_config_reg2 = {6'b0, op};
         pulse_ctrl(CLEAR);
@@ -119,8 +119,9 @@ module tb_fpu_top;
                             input logic [1:0]  op);
         logic [31:0] res, expected;
         logic        timeout, ok;
+        int          cycles;
 
-        run_op(a, b, op, res, timeout);
+        run_op(a, b, op, res, timeout, cycles);
         expected = ref_model(a, b, op);
 
         // Tous les NaN sont acceptés si un NaN est attendu
@@ -134,8 +135,8 @@ module tb_fpu_top;
         end
         else if (ok) begin
             n_pass++;
-            $display("[PASS] %-28s %h %s %h = %h",
-                     name, a, (op[0] ? "-" : "+"), b, res);
+            $display("[PASS] %-28s %h %s %h = %h , %0d cycles",
+                     name, a, (op[0] ? "-" : "+"), b, res, cycles);
         end
         else begin
             n_fail++;
